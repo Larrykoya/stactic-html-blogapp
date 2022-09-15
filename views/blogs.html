@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    .post-item {
+        margin: 10px 200px;
+        padding: 10px;
+        border: 1px solid gray;
+    }
+    p {
+        text-align: justify;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post</title>
+</head>
+<body>
+    <h1>All Blog Post</h1>
+    <a href="/blog/new">Create Blog Post</a>
+    <div id="post-container"></div>
+</body>
+
+<script>
+
+    const postContainer = document.getElementById('post-container')
+    fetch('/api/blog')
+    .then((response) => response.json())
+    .then((response)=>{
+        const postContent = response.posts.map((blog) => {
+            return`
+            <div class="post-item">
+            <h2>${blog.title}</h2>
+            <h3>${blog.author}</h3>
+            <img height="200" width="300" src="${blog.imageUrl}" />
+            <p>${blog.body.substring(0, 400)}...</p>
+            <a href="/blog/${blog._id}"><button> View Full Post </button></a>
+            </div>
+            `;
+        })
+        postContainer.innerHTML = postContent.join('');
+    });
+</script>
+</html>

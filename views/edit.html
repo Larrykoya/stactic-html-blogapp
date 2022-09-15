@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Blog Post</title>
+    <style>
+        label{
+            font-weight: bold;
+        }
+        form {
+            width: 50%;
+        }
+        .input-field{
+            display: block;
+            width: 100%;
+            padding: 5px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        button{
+            background-color: blueviolet;
+            border-radius: 5px;
+            color: black;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+        }
+        #error-message{
+            color: red;
+            background-color: aliceblue;
+            font-size: 16px;
+        }
+        #success-message{
+            color: green;
+            background-color: aliceblue;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <form onsubmit="handleSubmit(event)">
+        <h1>Create Blog Post</h1>
+        <span id="error-message"></span>
+        <span id="success-message"></span>
+        <div class="input-group">
+            <label>Title</label>
+            <input type="text" id="title" name="title" class="input-field">
+        </div>
+        <div class="input-group">
+            <label>Author</label>
+            <input type="text" id="author" name="author" class="input-field">
+        </div>
+        <div class="input-group">
+            <label>Image URL</label>
+            <input type="url" id="imageUrl" name="imageUrl" class="input-field">
+        </div>
+        <div class="input-group">
+            <label>Body</label>
+            <textarea 
+            class="input-field" 
+            id="body"
+            name="body" 
+            cols="100" 
+            rows="20"
+            ></textarea>
+        </div>
+        <button id="submit-button">Create Blog Post</button>
+    </form>
+</body>
+<script>
+    const splitArray = location.pathname.split('/');
+    const blogId = splitArray[2];
+    const titleInput = document.getElementById('title');
+    const authorInput = document.getElementById('author');
+    const imageUrlInput = document.getElementById('imageUrl');
+    const bodyInput = document.getElementById('body');
+    const submitButton = document.getElementById('submit-button');
+    const errorContainer = document.getElementById('error-message');
+    const successContainer = document.getElementById('success-message');
+
+
+window.onload = () => {
+    fetch(`/api/blog/${blogId}`)
+    .then((response) => response.json())
+    .then((response)=>{
+        titleInput.value = response.post.title
+        authorInput.value = response.post.author
+        imageUrlInput.value = response.post.imageUrl
+        bodyInput.value = response.post.body
+    })
+    .catch((err) => {
+        errorContainer.innerHTML = "There was an issue loading the post"
+    });
+};
+    
+    const handleSubmit = (event) => {
+        submitButton.innerHTML = 'Edit...'
+        event.preventDefault();
+        
+        const title = event.target[0].value;
+        const author = event.target[1].value;
+        const imageUrl = event.target[2].value;
+        const body = event.target[3].value;
+        
+        fetch(`/api/blog/${blogId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title,
+                author,
+                imageUrl,
+                body,
+            }),
+        }).then((response)=> {
+            response.json();
+            })
+            .then((data)=> {
+                submitButton.innerHTML = 'Edited';
+                submitButton.ariaDisabled = true
+                successContainer.innerHTML = 'Blog post updated successfully'
+            return setTimeout(
+                () => (window.location.href = `/blog/${blogId}`),
+                5000
+            );
+            })
+            .catch((err)=> {
+                console.log(err);
+                errorContainer.innerHTML = 'There was an issue updating the post'
+            });
+    };
+</script>
+</html>

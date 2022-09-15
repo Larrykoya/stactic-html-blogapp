@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Blog Item</title>
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    .post-item {
+        margin: 10px 200px;
+        padding: 10px;
+        border: 1px solid gray;
+    }
+    p {
+        text-align: justify;
+    }
+    #error-message{
+            color: red;
+            background-color: aliceblue;
+            font-size: 16px;
+        }
+        #success-message{
+            color: green;
+            background-color: aliceblue;
+            font-size: 16px;
+        }
+</style>
+<body>
+    <h1>Single Blog Post</h1>
+    <div id="post-container"></div>
+</body>
+<script>
+    const postContainer = document.getElementById('post-container')
+    const splitArray = location.pathname.split('/');
+    let blogId = splitArray[2];
+
+    fetch(`/api/blog/${blogId}`)
+    .then((response) => response.json())
+    .then((response)=>{
+        const postContent = `
+            <div class="post-item">
+            <h1>${response.post.title}</h1>
+            <h2>${response.post.author}</h2>
+            <img height="400" width="600" src="${response.post.imageUrl}" />
+            <p>${response.post.body}</p>
+            <a href="/blog"><button> View All Posts </button></a>
+            <a href='/blog/${blogId}/edit'><button> Edit Post</button></a>
+            <button onclick="handleDelete()">Delete Post</button>
+            <span id="error-message"></span>
+            <span id="success-message"></span>
+            </div>
+            `;
+        
+        postContainer.innerHTML = postContent
+    });
+
+    function handleDelete() {
+    const errorContainer = document.getElementById('error-message');
+    const successContainer = document.getElementById('success-message');
+        fetch(`/api/blog/${blogId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        
+            }).then((response)=> {
+            response.json();
+            })
+            .then((data)=> {
+                successContainer.innerHTML = 'Blog post deleted successfully'
+            return setTimeout(
+                () => (window.location.href = `/blog`),
+                5000
+            );
+            }).catch((err) => {
+            errorContainer.innerHTML = "There was an issue deleting the post"
+         });
+    };
+</script>
+</html>
